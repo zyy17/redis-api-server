@@ -46,16 +46,29 @@ void readFromClient(aeEventLoop *loop, int fd, void *clientdata, int mask)
     resp::unique_value rep = res.value();
     if (rep.type() == resp::ty_array) {
         resp::unique_array<resp::unique_value> arr = rep.array();
-        if (arr[0].bulkstr() == "COMMAND") {
-            reply(fd, send_buffer, "-ERR unknown command 'COMMAND'\r\n");
-        } else if (arr[0].bulkstr() == "SET" || arr[0].bulkstr() == "set") {
-            std::cout << "Set key: " << arr[1].bulkstr().data()
+        if (arr[0].bulkstr() == "SET" || arr[0].bulkstr() == "set") {
+            std::cout << "SET key: " << arr[1].bulkstr().data()
                       << " , value: " << arr[2].bulkstr().data() << std::endl;
+            // you can add your handler here
             reply(fd, send_buffer, "+OK\r\n");
         } else if (arr[0].bulkstr() == "GET" || arr[0].bulkstr() == "get") {
-            std::cout << "Get key: " << arr[1].bulkstr().data() << std::endl;
+            std::cout << "GET key: " << arr[1].bulkstr().data() << std::endl;
+            // you can add your handler here
             buffers = enc.encode("foo");
             reply(fd, send_buffer, buffers.data()[0].data());
+        } else if (arr[0].bulkstr() == "rpush" || arr[0].bulkstr() == "RPUSH") {
+            std::cout << "RPUSH key: " << arr[1].bulkstr().data() << std::endl;
+            for (int i = 2; i < arr.size(); i++) {
+                std::cout << arr[i].bulkstr().data() << std::endl;
+            }
+            reply(fd, send_buffer, "+OK\r\n");
+        } else if (arr[0].bulkstr() == "lrange" || arr[0].bulkstr() == "LRANGE") {
+            buffers = enc.encode("foo", "bar", "tom");
+            reply(fd, send_buffer, buffers.data()[0].data());
+        } else {
+            std::string pre_part("-ERR unknown command '");
+            std::string unknown_command(arr[0].bulkstr().data());
+            reply(fd, send_buffer, pre_part + unknown_command + "'\r\n");
         }
     } else {
         reply(fd, send_buffer, "+OK\r\n");
