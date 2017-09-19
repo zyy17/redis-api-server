@@ -1,4 +1,9 @@
-## Overview
+
+### Deprecated
+
+Future work will **continue** on [logcabin-redis-proxy](https://github.com/yunba/logcabin-redis-proxy)
+
+## Overview (
 
 `redis-api-server` is the simple server framework that can ship your API with RESP protocol.
 
